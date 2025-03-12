@@ -1,8 +1,8 @@
 # To run this project run a command: 
 ```
-> npm run start [mapNumber]
+npm run start [mapNumber]
 ```
-mapNumber can be from 0 to 4 and:
+```mapNumber``` can be from 0 to 4 and:
 - 0 - "Basic"
 - 1 - "Go straight through intersections"
 - 2 - "Letters may be found on turns"
@@ -10,7 +10,7 @@ mapNumber can be from 0 to 4 and:
 - 4 - "Broken path"
 
 
-# This is a solution for the challenge:
+# The project is the solution for the following challenge:
 
 Follow a path of characters & collect letters:
 
