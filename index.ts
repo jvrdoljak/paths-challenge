@@ -39,18 +39,25 @@ const initialMap3: Array<Array<string>> = [
 ];
 
 const initialMap4: Array<Array<string>> = [
-  ["","","","","+","-","O","-","N","-","+","",""],
-["","","","","|","","","","","","|","",""],
-["","","","","|","","","","+","-","I","-","+"],
-["@","-","G","-","O","-","+","","|","","|","","|"],
-["","","","","|","","|","","+","-","+","","E"],
-["","","","","+","-","+","","","","","","S"],
-["","","","","","","","","","","","","|"],
-["","","","","","","","","","","","","x"]
+  ["", "", "", "", "+", "-", "O", "-", "N", "-", "+", "", ""],
+  ["", "", "", "", "|", "", "", "", "", "", "|", "", ""],
+  ["", "", "", "", "|", "", "", "", "+", "-", "I", "-", "+"],
+  ["@", "-", "G", "-", "O", "-", "+", "", "|", "", "|", "", "|"],
+  ["", "", "", "", "|", "", "|", "", "+", "-", "+", "", "E"],
+  ["", "", "", "", "+", "-", "+", "", "", "", "", "", "S"],
+  ["", "", "", "", "", "", "", "", "", "", "", "", "|"],
+  ["", "", "", "", "", "", "", "", "", "", "", "", "x"],
 ];
 
-let workingMap:Array<Array<Position>>= [];
-let path: string = "@";
+const brokenPathMap: Array<Array<string>> = [
+  ["@", "-", "-", "A", "-", "+", "", ""],
+  ["", "", "", "", "", "|", "", ""],
+  ["", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "B", "-", "x"],
+];
+
+let workingMap: Array<Array<Position>> = [];
+let path: Array<Position> = [];
 
 function getInitialValues(
   map: Array<Array<string>>,
@@ -78,15 +85,19 @@ function getInitialValues(
   });
 
   if (startPositions.length > 1) {
-    cb("This map has two starting positions.");
+    cb("Multiple starts.");
     return;
   }
   if (endPositions.length > 1) {
-    cb("This map has two end positions.");
+    cb("Multiple ends.");
     return;
   }
-  if (startPositions[0] == null || endPositions[0] == null) {
-    cb("Start or end position is missing");
+  if (startPositions.length < 1) {
+    cb("Missing start character.");
+    return;
+  }
+  if (endPositions.length < 1) {
+    cb("Missing end character.");
     return;
   }
 
@@ -120,7 +131,6 @@ function getValidNeighbours(position: Position): Array<Position> {
     { i: currentI + 1, j: currentJ, direction: Directions.S },
   ];
   possibleNeighbourPositions.forEach((possiblePosition) => {
-    console.log({ possiblePosition });
     if (
       possiblePosition.i >= 0 &&
       possiblePosition.i < workingMap.length &&
@@ -139,8 +149,6 @@ function getValidNeighbours(position: Position): Array<Position> {
       }
     }
   });
-  console.log({ position });
-  console.log({ neighbours });
   return neighbours;
 }
 
@@ -148,39 +156,61 @@ function nextStep(
   map: Array<Array<String>>,
   startPosition: Position,
   currentPosition: Position,
+  cb: (err?: string) => void,
 ) {
   const neighbours = getValidNeighbours(currentPosition);
 
-  const neighbour = neighbours.length == 1 ? neighbours[0] : neighbours.find((a) => a.direction == currentPosition.direction);
+  if (neighbours.length == 0) cb("Broken path");
+
+  const neighbour =
+    neighbours.length == 1
+      ? neighbours[0]
+      : neighbours.find((a) => a.direction == currentPosition.direction);
 
   if (!!neighbour) {
-    path += workingMap[neighbour.i][neighbour.j].value;
-    workingMap[neighbour.i][neighbour.j].direction =
-      neighbour.direction;
+    if (workingMap[neighbour.i][neighbour.j].direction == Directions.Initial) {
+      path.push(workingMap[neighbour.i][neighbour.j]);
+    }
+    workingMap[neighbour.i][neighbour.j].direction = neighbour.direction;
 
     if (workingMap[neighbour.i][neighbour.j].value == "x") return;
 
-    nextStep(map, startPosition, {
-      i: neighbour.i,
-      j: neighbour.j,
-      direction: neighbour.direction,
-      value: neighbour.value,
-    });
+    nextStep(
+      map,
+      startPosition,
+      {
+        i: neighbour.i,
+        j: neighbour.j,
+        direction: neighbour.direction,
+        value: neighbour.value,
+      },
+      (err) => {
+        if (err) console.error("Error:", err);
+      },
+    );
   }
 }
 
-getInitialValues(initialMap4, (err, data) => {
+getInitialValues(brokenPathMap, (err, data) => {
   if (err) {
-    console.error(err);
+    console.error("Error:", err);
     return;
   }
 
   if (data == null) return;
 
-  nextStep(initialMap4, data.startPosition, data.startPosition);
+  nextStep(brokenPathMap, data.startPosition, data.startPosition, (err) => {
+    if (err) console.error("Error:", err);
+  });
 
-  console.log({ path });
-  console.log({ word: path.match(/[A-Z]/g)?.toString() });
+  let displayPath = "@";
+
+  path.forEach((e) => {
+    displayPath += e.value;
+  });
+
+  const displayWord = displayPath.match(/[A-Z]/g)?.join("");
+
+  console.log({ displayPath });
+  console.log({ displayWord });
 });
-
-// getNeighbours(nEI, sP.i, sP.j);

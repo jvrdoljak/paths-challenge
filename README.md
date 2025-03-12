@@ -1,1 +1,1 @@
-To run this project run a command: > node index.js
+To run this project run a command: > npm run start
