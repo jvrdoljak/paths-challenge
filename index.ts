@@ -13,49 +13,49 @@ interface Position {
   value: string;
 }
 
-const initialMap: Array<Array<string>> = [
-  ["@", "-", "-", "-", "A", "-", "-", "-", "+"],
-  ["", "", "", "", "", "", "", "", "|"],
-  ["x", "-", "B", "-", "+", "", "", "", "C"],
-  ["", "", "", "", "|", "", "", "", "|"],
-  ["", "", "", "", "+", "-", "-", "-", "+"],
+const maps = [
+  [
+    ["@", "-", "-", "-", "A", "-", "-", "-", "+"],
+    ["", "", "", "", "", "", "", "", "|"],
+    ["x", "-", "B", "-", "+", "", "", "", "C"],
+    ["", "", "", "", "|", "", "", "", "|"],
+    ["", "", "", "", "+", "-", "-", "-", "+"],
+  ],
+  [
+    ["@", "", "", "", "", "", "", "", "", ""],
+    ["|", "", "+", "-", "C", "-", "-", "+", "", ""],
+    ["A", "", "|", "", "", "", "", "|", "", ""],
+    ["+", "-", "-", "-", "B", "-", "-", "+", "", ""],
+    ["", "", "|", "", "", "", "", "", "", "x"],
+    ["", "", "|", "", "", "", "", "", "", "|"],
+    ["", "", "+", "-", "-", "-", "D", "-", "-", "+"],
+  ],
+  [
+    ["@", "-", "-", "-", "A", "-", "-", "-", "+"],
+    ["", "", "", "", "", "", "", "", "|"],
+    ["x", "-", "B", "-", "+", "", "", "", "|"],
+    ["", "", "", "", "|", "", "", "", "|"],
+    ["", "", "", "", "+", "-", "-", "-", "C"],
+  ],
+  [
+    ["", "", "", "", "+", "-", "O", "-", "N", "-", "+", "", ""],
+    ["", "", "", "", "|", "", "", "", "", "", "|", "", ""],
+    ["", "", "", "", "|", "", "", "", "+", "-", "I", "-", "+"],
+    ["@", "-", "G", "-", "O", "-", "+", "", "|", "", "|", "", "|"],
+    ["", "", "", "", "|", "", "|", "", "+", "-", "+", "", "E"],
+    ["", "", "", "", "+", "-", "+", "", "", "", "", "", "S"],
+    ["", "", "", "", "", "", "", "", "", "", "", "", "|"],
+    ["", "", "", "", "", "", "", "", "", "", "", "", "x"],
+  ],
+  [
+    ["@", "-", "-", "A", "-", "+", "", ""],
+    ["", "", "", "", "", "|", "", ""],
+    ["", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "B", "-", "x"],
+  ],
 ];
 
-const initialMap2: Array<Array<string>> = [
-  ["@", "", "", "", "", "", "", "", "", ""],
-  ["|", "", "+", "-", "C", "-", "-", "+", "", ""],
-  ["A", "", "|", "", "", "", "", "|", "", ""],
-  ["+", "-", "-", "-", "B", "-", "-", "+", "", ""],
-  ["", "", "|", "", "", "", "", "", "", "x"],
-  ["", "", "|", "", "", "", "", "", "", "|"],
-  ["", "", "+", "-", "-", "-", "D", "-", "-", "+"],
-];
-const initialMap3: Array<Array<string>> = [
-  ["@", "-", "-", "-", "A", "-", "-", "-", "+"],
-  ["", "", "", "", "", "", "", "", "|"],
-  ["x", "-", "B", "-", "+", "", "", "", "|"],
-  ["", "", "", "", "|", "", "", "", "|"],
-  ["", "", "", "", "+", "-", "-", "-", "C"],
-];
-
-const initialMap4: Array<Array<string>> = [
-  ["", "", "", "", "+", "-", "O", "-", "N", "-", "+", "", ""],
-  ["", "", "", "", "|", "", "", "", "", "", "|", "", ""],
-  ["", "", "", "", "|", "", "", "", "+", "-", "I", "-", "+"],
-  ["@", "-", "G", "-", "O", "-", "+", "", "|", "", "|", "", "|"],
-  ["", "", "", "", "|", "", "|", "", "+", "-", "+", "", "E"],
-  ["", "", "", "", "+", "-", "+", "", "", "", "", "", "S"],
-  ["", "", "", "", "", "", "", "", "", "", "", "", "|"],
-  ["", "", "", "", "", "", "", "", "", "", "", "", "x"],
-];
-
-const brokenPathMap: Array<Array<string>> = [
-  ["@", "-", "-", "A", "-", "+", "", ""],
-  ["", "", "", "", "", "|", "", ""],
-  ["", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "B", "-", "x"],
-];
-
+let initialMap = maps[Number(process.argv[2]) ?? 0] ?? maps[0];
 let workingMap: Array<Array<Position>> = [];
 let path: Array<Position> = [];
 
@@ -121,7 +121,10 @@ function oppositeDirection(direction: Directions) {
   }
 }
 
-function getValidNeighbours(position: Position): Array<Position> {
+function getValidNeighbours(
+  position: Position,
+  cb: (err: string | null, data?: Array<Position>) => void,
+) {
   const neighbours: Array<Position> = [];
   const { i: currentI, j: currentJ, direction: currentDirection } = position;
   const possibleNeighbourPositions = [
@@ -149,7 +152,20 @@ function getValidNeighbours(position: Position): Array<Position> {
       }
     }
   });
-  return neighbours;
+
+  if (neighbours.length != 0 && position.value == "+") {
+    if (
+      neighbours.filter(
+        (e) =>
+          e.direction != position.direction &&
+          e.direction != oppositeDirection(position.direction),
+      ).length == 0
+    ) {
+      cb("Fake turn.");
+      return;
+    }
+  }
+  cb(null, neighbours);
 }
 
 function nextStep(
@@ -158,9 +174,19 @@ function nextStep(
   currentPosition: Position,
   cb: (err?: string) => void,
 ) {
-  const neighbours = getValidNeighbours(currentPosition);
+  let neighbours: Array<Position> | undefined;
+  getValidNeighbours(currentPosition, (err, data) => {
+    if (err) {
+      console.error("Error: ", err);
+      return;
+    }
 
-  if (neighbours.length == 0) cb("Broken path");
+    neighbours = data;
+  });
+
+  if (!neighbours) return;
+
+  if (neighbours.length == 0) cb("Broken path.");
 
   const neighbour =
     neighbours.length == 1
@@ -188,10 +214,12 @@ function nextStep(
         if (err) console.error("Error:", err);
       },
     );
+  } else {
+    cb("Error");
   }
 }
 
-getInitialValues(brokenPathMap, (err, data) => {
+getInitialValues(initialMap, (err, data) => {
   if (err) {
     console.error("Error:", err);
     return;
@@ -199,7 +227,7 @@ getInitialValues(brokenPathMap, (err, data) => {
 
   if (data == null) return;
 
-  nextStep(brokenPathMap, data.startPosition, data.startPosition, (err) => {
+  nextStep(initialMap, data.startPosition, data.startPosition, (err) => {
     if (err) console.error("Error:", err);
   });
 
