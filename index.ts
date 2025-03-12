@@ -21,7 +21,35 @@ const initialMap: Array<Array<string>> = [
   ["", "", "", "", "+", "-", "-", "-", "+"],
 ];
 
-let workingMap: Array<Array<Position>> = [];
+const initialMap2: Array<Array<string>> = [
+  ["@", "", "", "", "", "", "", "", "", ""],
+  ["|", "", "+", "-", "C", "-", "-", "+", "", ""],
+  ["A", "", "|", "", "", "", "", "|", "", ""],
+  ["+", "-", "-", "-", "B", "-", "-", "+", "", ""],
+  ["", "", "|", "", "", "", "", "", "", "x"],
+  ["", "", "|", "", "", "", "", "", "", "|"],
+  ["", "", "+", "-", "-", "-", "D", "-", "-", "+"],
+];
+const initialMap3: Array<Array<string>> = [
+  ["@", "-", "-", "-", "A", "-", "-", "-", "+"],
+  ["", "", "", "", "", "", "", "", "|"],
+  ["x", "-", "B", "-", "+", "", "", "", "|"],
+  ["", "", "", "", "|", "", "", "", "|"],
+  ["", "", "", "", "+", "-", "-", "-", "C"],
+];
+
+const initialMap4: Array<Array<string>> = [
+  ["","","","","+","-","O","-","N","-","+","",""],
+["","","","","|","","","","","","|","",""],
+["","","","","|","","","","+","-","I","-","+"],
+["@","-","G","-","O","-","+","","|","","|","","|"],
+["","","","","|","","|","","+","-","+","","E"],
+["","","","","+","-","+","","","","","","S"],
+["","","","","","","","","","","","","|"],
+["","","","","","","","","","","","","x"]
+];
+
+let workingMap:Array<Array<Position>>= [];
 let path: string = "@";
 
 function getInitialValues(
@@ -123,30 +151,36 @@ function nextStep(
 ) {
   const neighbours = getValidNeighbours(currentPosition);
 
-  if (neighbours.length > 0 && neighbours.length < 2) {
-    path += workingMap[neighbours[0].i][neighbours[0].j].value;
-    workingMap[neighbours[0].i][neighbours[0].j].direction =
-      neighbours[0].direction;
+  const neighbour = neighbours.length == 1 ? neighbours[0] : neighbours.find((a) => a.direction == currentPosition.direction);
 
-    if (workingMap[neighbours[0].i][neighbours[0].j].value == "x") return;
+  if (!!neighbour) {
+    path += workingMap[neighbour.i][neighbour.j].value;
+    workingMap[neighbour.i][neighbour.j].direction =
+      neighbour.direction;
+
+    if (workingMap[neighbour.i][neighbour.j].value == "x") return;
 
     nextStep(map, startPosition, {
-      i: neighbours[0].i,
-      j: neighbours[0].j,
-      direction: neighbours[0].direction,
-      value: neighbours[0].value,
+      i: neighbour.i,
+      j: neighbour.j,
+      direction: neighbour.direction,
+      value: neighbour.value,
     });
   }
 }
 
-getInitialValues(initialMap, (err, data) => {
+getInitialValues(initialMap4, (err, data) => {
   if (err) {
     console.error(err);
     return;
   }
 
   if (data == null) return;
-  nextStep(initialMap, data.startPosition, data.startPosition);
+
+  nextStep(initialMap4, data.startPosition, data.startPosition);
+
+  console.log({ path });
+  console.log({ word: path.match(/[A-Z]/g)?.toString() });
 });
 
 // getNeighbours(nEI, sP.i, sP.j);
