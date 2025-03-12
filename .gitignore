@@ -1,0 +1,42 @@
+# Node.js dependencies
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# TypeScript build output
+dist/
+build/
+out/
+
+# TypeScript temporary files
+*.tsbuildinfo
+
+# Logs and debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Jest & Testing
+coverage/
+*.lcov
+
+# Optional: Remove compiled JS files if keeping TS only
+*.js
+*.js.map
