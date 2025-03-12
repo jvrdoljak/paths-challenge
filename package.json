@@ -4,7 +4,10 @@
   "description": "To run this project run a command: > node index.js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx ts-node index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "npx prettier --write .",
+    "check-format": "npx prettier --check ."
   },
   "keywords": [],
   "author": "",
