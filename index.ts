@@ -92,24 +92,27 @@ function getValidNeighbours(position: Position): Array<Position> {
     { i: currentI + 1, j: currentJ, direction: Directions.S },
   ];
   possibleNeighbourPositions.forEach((possiblePosition) => {
-    console.log({possiblePosition})
+    console.log({ possiblePosition });
     if (
-      (possiblePosition.i >= 0) &&
-      (possiblePosition.i < workingMap.length) &&
-      (possiblePosition.j >= 0) &&
-      (possiblePosition.j < workingMap[possiblePosition.i].length)
+      possiblePosition.i >= 0 &&
+      possiblePosition.i < workingMap.length &&
+      possiblePosition.j >= 0 &&
+      possiblePosition.j < workingMap[possiblePosition.i].length
     ) {
       if (
         workingMap[possiblePosition.i][possiblePosition.j].value != "" &&
         possiblePosition.direction !=
           oppositeDirection(workingMap[currentI][currentJ].direction)
       ) {
-        neighbours.push({...workingMap[possiblePosition.i][possiblePosition.j], direction: possiblePosition.direction});
+        neighbours.push({
+          ...workingMap[possiblePosition.i][possiblePosition.j],
+          direction: possiblePosition.direction,
+        });
       }
     }
   });
-  console.log({position})
- console.log({neighbours});
+  console.log({ position });
+  console.log({ neighbours });
   return neighbours;
 }
 
@@ -122,16 +125,17 @@ function nextStep(
 
   if (neighbours.length > 0 && neighbours.length < 2) {
     path += workingMap[neighbours[0].i][neighbours[0].j].value;
-    workingMap[neighbours[0].i][neighbours[0].j].direction = neighbours[0].direction;
+    workingMap[neighbours[0].i][neighbours[0].j].direction =
+      neighbours[0].direction;
 
-    if(workingMap[neighbours[0].i][neighbours[0].j].value == 'x') return;
+    if (workingMap[neighbours[0].i][neighbours[0].j].value == "x") return;
 
-      nextStep(map, startPosition, {
-        i: neighbours[0].i,
-        j: neighbours[0].j,
-        direction: neighbours[0].direction,
-        value: neighbours[0].value,
-      });
+    nextStep(map, startPosition, {
+      i: neighbours[0].i,
+      j: neighbours[0].j,
+      direction: neighbours[0].direction,
+      value: neighbours[0].value,
+    });
   }
 }
 
