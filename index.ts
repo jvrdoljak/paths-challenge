@@ -1,4 +1,9 @@
-import { ERROR_MESSAGE } from "./errorMessages";
+import {
+  endCharacter,
+  ERROR_MESSAGE,
+  startCharacter,
+  turnCharacter,
+} from "./constants";
 import { maps } from "./maps";
 
 enum Direction {
@@ -16,24 +21,54 @@ interface Position {
   value: string;
 }
 
-const initialMap = maps[Number(process.argv[2]) ?? 0] ?? maps[0];
-const workingMap: Array<Array<Position>> = [];
-const path: Array<Position> = [];
-const startCharacter = "@";
-const endCharacter = "x";
-const turnCharacter = "+";
+main(maps[Number(process.argv[2]) ?? 0] ?? maps[0]);
 
-function getInitialValues(
-  map: Array<Array<string>>,
-  cb: (
-    err: string | null,
-    data?: {
-      startPosition: Position;
-    },
-  ) => void,
-) {
+function main(initialMap: Array<Array<string>>) {
+  const { err, data } = getInitialValues(initialMap);
+  if (err) {
+    console.error("Error:", err);
+    return;
+  }
+  if (!data) return;
+
+  const workingMap: Array<Array<Position>> = data.workingMap;
+
+  const { err: error, path } = nextStep(
+    initialMap,
+    data.startPosition,
+    data.startPosition,
+    workingMap,
+    [],
+  );
+  if (error) console.error("Error:", err);
+
+  if (!path || path.length === 0) {
+    console.error(ERROR_MESSAGE.defaultError);
+    return;
+  }
+
+  let displayPath = startCharacter;
+
+  path.forEach((e) => {
+    displayPath += e.value;
+  });
+
+  const displayWord = displayPath.match(/[A-Z]/g)?.join("");
+
+  console.log({ displayPath });
+  console.log({ displayWord });
+}
+
+function getInitialValues(map: Array<Array<string>>): {
+  err: string | null;
+  data?: {
+    startPosition: Position;
+    workingMap: Array<Array<Position>>;
+  };
+} {
   const startPositions: Array<Position> = [];
   const endPositions: Array<Position> = [];
+  const workingMap: Array<Array<Position>> = [];
 
   map.forEach((row, i) => {
     workingMap.push([]);
@@ -49,64 +84,85 @@ function getInitialValues(
   });
 
   if (startPositions.length > 1) {
-    cb(ERROR_MESSAGE.multipleStarts);
-    return;
+    return { err: ERROR_MESSAGE.multipleStarts };
   }
   if (endPositions.length > 1) {
-    cb(ERROR_MESSAGE.multipleEnds);
-    return;
+    return { err: ERROR_MESSAGE.multipleEnds };
   }
   if (startPositions.length < 1) {
-    cb(ERROR_MESSAGE.missingStart);
-    return;
+    return { err: ERROR_MESSAGE.missingStart };
   }
   if (endPositions.length < 1) {
-    cb(ERROR_MESSAGE.missingEnd);
-    return;
+    return { err: ERROR_MESSAGE.missingEnd };
   }
 
-  cb(null, {
-    startPosition: startPositions[0],
-  });
+  return {
+    err: null,
+    data: {
+      startPosition: startPositions[0],
+      workingMap,
+    },
+  };
 }
 
-function oppositeDirection(direction: Direction) {
-  switch (direction) {
-    case Direction.N:
-      return Direction.S;
-    case Direction.E:
-      return Direction.W;
-    case Direction.S:
-      return Direction.N;
-    case Direction.W:
-      return Direction.E;
-    default:
-      return direction;
-  }
-}
-
-function isPossibleNeighbourInsideMap(
-  possiblePosition: Position,
+function nextStep(
+  map: Array<Array<String>>,
+  startPosition: Position,
+  currentPosition: Position,
   workingMap: Array<Array<Position>>,
-): boolean {
-  return (
-    possiblePosition.i >= 0 &&
-    possiblePosition.i < workingMap.length &&
-    possiblePosition.j >= 0 &&
-    possiblePosition.j < workingMap[possiblePosition.i].length
+  path: Array<Position> = [],
+): { err: string | null; path?: Array<Position> } {
+  const { err, data: neighbours } = getValidNeighbours(
+    currentPosition,
+    workingMap,
   );
+  if (err) {
+    return { err };
+  }
+
+  if (!neighbours) return { err: ERROR_MESSAGE.defaultError };
+  else if (neighbours.length == 0) {
+    return { err: ERROR_MESSAGE.brokenPath };
+  }
+
+  const neighbour =
+    neighbours.length == 1
+      ? neighbours[0]
+      : neighbours.find((a) => a.direction == currentPosition.direction);
+
+  if (!!neighbour) {
+    if (workingMap[neighbour.i][neighbour.j].direction == Direction.Initial) {
+      path.push(workingMap[neighbour.i][neighbour.j]);
+    }
+    workingMap[neighbour.i][neighbour.j].direction = neighbour.direction;
+
+    if (workingMap[neighbour.i][neighbour.j].value == endCharacter)
+      return { err: null, path: path };
+
+    const { err } = nextStep(
+      map,
+      startPosition,
+      {
+        i: neighbour.i,
+        j: neighbour.j,
+        direction: neighbour.direction,
+        value: neighbour.value,
+      },
+      workingMap,
+      path,
+    );
+
+    if (err) return { err };
+    return { err: null, path };
+  } else {
+    return { err: ERROR_MESSAGE.defaultError };
+  }
 }
 
-function getPossibleNeighbours(i: number, j: number): Array<Position> {
-  return [
-    { i, j: j - 1, direction: Direction.W, value: "" },
-    { i, j: j + 1, direction: Direction.E, value: "" },
-    { i: i - 1, j, direction: Direction.N, value: "" },
-    { i: i + 1, j, direction: Direction.S, value: "" },
-  ];
-}
-
-function getValidNeighbours(position: Position): {
+function getValidNeighbours(
+  position: Position,
+  workingMap: Array<Array<Position>>,
+): {
   err: string | null;
   data?: Array<Position>;
 } {
@@ -145,75 +201,38 @@ function getValidNeighbours(position: Position): {
   return { err: null, data: neighbours };
 }
 
-function nextStep(
-  map: Array<Array<String>>,
-  startPosition: Position,
-  currentPosition: Position,
-  cb: (err?: string) => void,
-) {
-  const { err, data: neighbours } = getValidNeighbours(currentPosition);
-  if (err) {
-    console.error("Error: ", err);
-    return;
-  }
-
-  if (!neighbours) return;
-  else if (neighbours.length == 0) {
-    cb(ERROR_MESSAGE.brokenPath);
-    return;
-  }
-
-  const neighbour =
-    neighbours.length == 1
-      ? neighbours[0]
-      : neighbours.find((a) => a.direction == currentPosition.direction);
-
-  if (!!neighbour) {
-    if (workingMap[neighbour.i][neighbour.j].direction == Direction.Initial) {
-      path.push(workingMap[neighbour.i][neighbour.j]);
-    }
-    workingMap[neighbour.i][neighbour.j].direction = neighbour.direction;
-
-    if (workingMap[neighbour.i][neighbour.j].value == endCharacter) return;
-
-    nextStep(
-      map,
-      startPosition,
-      {
-        i: neighbour.i,
-        j: neighbour.j,
-        direction: neighbour.direction,
-        value: neighbour.value,
-      },
-      (err) => {
-        if (err) console.error("Error:", err);
-      },
-    );
-  } else {
-    cb("Error");
-  }
+function getPossibleNeighbours(i: number, j: number): Array<Position> {
+  return [
+    { i, j: j - 1, direction: Direction.W, value: "" },
+    { i, j: j + 1, direction: Direction.E, value: "" },
+    { i: i - 1, j, direction: Direction.N, value: "" },
+    { i: i + 1, j, direction: Direction.S, value: "" },
+  ];
 }
 
-getInitialValues(initialMap, (err, data) => {
-  if (err) {
-    console.error("Error:", err);
-    return;
+function isPossibleNeighbourInsideMap(
+  possiblePosition: Position,
+  workingMap: Array<Array<Position>>,
+): boolean {
+  return (
+    possiblePosition.i >= 0 &&
+    possiblePosition.i < workingMap.length &&
+    possiblePosition.j >= 0 &&
+    possiblePosition.j < workingMap[possiblePosition.i].length
+  );
+}
+
+function oppositeDirection(direction: Direction) {
+  switch (direction) {
+    case Direction.N:
+      return Direction.S;
+    case Direction.E:
+      return Direction.W;
+    case Direction.S:
+      return Direction.N;
+    case Direction.W:
+      return Direction.E;
+    default:
+      return direction;
   }
-
-  if (data == null) return;
-
-  nextStep(initialMap, data.startPosition, data.startPosition, (err) => {
-    if (err) console.error("Error:", err);
-  });
-
-  let displayPath = startCharacter;
-
-  path.forEach((e) => {
-    displayPath += e.value;
-  });
-
-  const displayWord = displayPath.match(/[A-Z]/g)?.join("");
-
-  console.log({ displayPath });
-  console.log({ displayWord });
-});
+}
