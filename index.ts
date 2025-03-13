@@ -83,18 +83,8 @@ function getInitialValues(map: Array<Array<string>>): {
     });
   });
 
-  if (startPositions.length > 1) {
-    return { err: ERROR_MESSAGE.multipleStarts };
-  }
-  if (endPositions.length > 1) {
-    return { err: ERROR_MESSAGE.multipleEnds };
-  }
-  if (startPositions.length < 1) {
-    return { err: ERROR_MESSAGE.missingStart };
-  }
-  if (endPositions.length < 1) {
-    return { err: ERROR_MESSAGE.missingEnd };
-  }
+  const { err } = validateMapConditions(startPositions, endPositions);
+  if (err) return { err };
 
   return {
     err: null,
@@ -157,6 +147,26 @@ function nextStep(
   } else {
     return { err: ERROR_MESSAGE.defaultError };
   }
+}
+
+function validateMapConditions(
+  startPositions: Array<Position>,
+  endPositions: Array<Position>,
+): { err: string | null } {
+  if (startPositions.length > 1) {
+    return { err: ERROR_MESSAGE.multipleStarts };
+  }
+  if (endPositions.length > 1) {
+    return { err: ERROR_MESSAGE.multipleEnds };
+  }
+  if (startPositions.length < 1) {
+    return { err: ERROR_MESSAGE.missingStart };
+  }
+  if (endPositions.length < 1) {
+    return { err: ERROR_MESSAGE.missingEnd };
+  }
+
+  return { err: null };
 }
 
 function getValidNeighbours(
