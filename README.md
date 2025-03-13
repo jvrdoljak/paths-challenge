@@ -1,6 +1,7 @@
 # To run this project run a command:
 
 ```
+npm install
 npm run start [mapNumber]
 ```
 
