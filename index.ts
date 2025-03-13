@@ -1,3 +1,6 @@
+import { ERROR_MESSAGE } from "./errorMessages";
+import { maps } from "./maps";
+
 enum Direction {
   Initial = "Initial",
   N = "N",
@@ -12,48 +15,6 @@ interface Position {
   direction: Direction;
   value: string;
 }
-
-const maps = [
-  [
-    ["@", "-", "-", "-", "A", "-", "-", "-", "+"],
-    ["", "", "", "", "", "", "", "", "|"],
-    ["x", "-", "B", "-", "+", "", "", "", "C"],
-    ["", "", "", "", "|", "", "", "", "|"],
-    ["", "", "", "", "+", "-", "-", "-", "+"],
-  ],
-  [
-    ["@", "", "", "", "", "", "", "", "", ""],
-    ["|", "", "+", "-", "C", "-", "-", "+", "", ""],
-    ["A", "", "|", "", "", "", "", "|", "", ""],
-    ["+", "-", "-", "-", "B", "-", "-", "+", "", ""],
-    ["", "", "|", "", "", "", "", "", "", "x"],
-    ["", "", "|", "", "", "", "", "", "", "|"],
-    ["", "", "+", "-", "-", "-", "D", "-", "-", "+"],
-  ],
-  [
-    ["@", "-", "-", "-", "A", "-", "-", "-", "+"],
-    ["", "", "", "", "", "", "", "", "|"],
-    ["x", "-", "B", "-", "+", "", "", "", "|"],
-    ["", "", "", "", "|", "", "", "", "|"],
-    ["", "", "", "", "+", "-", "-", "-", "C"],
-  ],
-  [
-    ["", "", "", "", "+", "-", "O", "-", "N", "-", "+", "", ""],
-    ["", "", "", "", "|", "", "", "", "", "", "|", "", ""],
-    ["", "", "", "", "|", "", "", "", "+", "-", "I", "-", "+"],
-    ["@", "-", "G", "-", "O", "-", "+", "", "|", "", "|", "", "|"],
-    ["", "", "", "", "|", "", "|", "", "+", "-", "+", "", "E"],
-    ["", "", "", "", "+", "-", "+", "", "", "", "", "", "S"],
-    ["", "", "", "", "", "", "", "", "", "", "", "", "|"],
-    ["", "", "", "", "", "", "", "", "", "", "", "", "x"],
-  ],
-  [
-    ["@", "-", "-", "A", "-", "+", "", ""],
-    ["", "", "", "", "", "|", "", ""],
-    ["", "", "", "", "", "", "", ""],
-    ["", "", "", "", "", "B", "-", "x"],
-  ],
-];
 
 const initialMap = maps[Number(process.argv[2]) ?? 0] ?? maps[0];
 const workingMap: Array<Array<Position>> = [];
@@ -88,19 +49,19 @@ function getInitialValues(
   });
 
   if (startPositions.length > 1) {
-    cb("Multiple starts.");
+    cb(ERROR_MESSAGE.multipleStarts);
     return;
   }
   if (endPositions.length > 1) {
-    cb("Multiple ends.");
+    cb(ERROR_MESSAGE.multipleEnds);
     return;
   }
   if (startPositions.length < 1) {
-    cb("Missing start character.");
+    cb(ERROR_MESSAGE.missingStart);
     return;
   }
   if (endPositions.length < 1) {
-    cb("Missing end character.");
+    cb(ERROR_MESSAGE.missingEnd);
     return;
   }
 
@@ -145,10 +106,10 @@ function getPossibleNeighbours(i: number, j: number): Array<Position> {
   ];
 }
 
-function getValidNeighbours(
-  position: Position,
-  cb: (err: string | null, data?: Array<Position>) => void,
-) {
+function getValidNeighbours(position: Position): {
+  err: string | null;
+  data?: Array<Position>;
+} {
   const neighbours: Array<Position> = [];
   const { i: currentI, j: currentJ } = position;
   const possibleNeighbours: Array<Position> = getPossibleNeighbours(
@@ -178,11 +139,10 @@ function getValidNeighbours(
           e.direction != oppositeDirection(position.direction),
       ).length == 0
     ) {
-      cb("Fake turn.");
-      return;
+      return { err: ERROR_MESSAGE.fakeTurn };
     }
   }
-  cb(null, neighbours);
+  return { err: null, data: neighbours };
 }
 
 function nextStep(
@@ -191,19 +151,17 @@ function nextStep(
   currentPosition: Position,
   cb: (err?: string) => void,
 ) {
-  let neighbours: Array<Position> | undefined;
-  getValidNeighbours(currentPosition, (err, data) => {
-    if (err) {
-      console.error("Error: ", err);
-      return;
-    }
-    
-    neighbours = data;
-  });
+  const { err, data: neighbours } = getValidNeighbours(currentPosition);
+  if (err) {
+    console.error("Error: ", err);
+    return;
+  }
 
   if (!neighbours) return;
-
-  if (neighbours.length == 0) cb("Broken path.");
+  else if (neighbours.length == 0) {
+    cb(ERROR_MESSAGE.brokenPath);
+    return;
+  }
 
   const neighbour =
     neighbours.length == 1
