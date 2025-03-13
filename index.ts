@@ -1,4 +1,4 @@
-enum Directions {
+enum Direction {
   Initial = "Initial",
   N = "N",
   W = "W",
@@ -9,7 +9,7 @@ enum Directions {
 interface Position {
   i: number;
   j: number;
-  direction: Directions;
+  direction: Direction;
   value: string;
 }
 
@@ -55,9 +55,12 @@ const maps = [
   ],
 ];
 
-let initialMap = maps[Number(process.argv[2]) ?? 0] ?? maps[0];
-let workingMap: Array<Array<Position>> = [];
-let path: Array<Position> = [];
+const initialMap = maps[Number(process.argv[2]) ?? 0] ?? maps[0];
+const workingMap: Array<Array<Position>> = [];
+const path: Array<Position> = [];
+const startCharacter = "@";
+const endCharacter = "x";
+const turnCharacter = "+";
 
 function getInitialValues(
   map: Array<Array<string>>,
@@ -74,12 +77,12 @@ function getInitialValues(
   map.forEach((row, i) => {
     workingMap.push([]);
     row.forEach((value, j) => {
-      workingMap[i].push({ i, j, direction: Directions.Initial, value });
-      if (value == "@") {
-        startPositions.push({ i, j, direction: Directions.Initial, value });
+      workingMap[i].push({ i, j, direction: Direction.Initial, value });
+      if (value == startCharacter) {
+        startPositions.push({ i, j, direction: Direction.Initial, value });
       }
-      if (value == "x") {
-        endPositions.push({ i, j, direction: Directions.Initial, value });
+      if (value == endCharacter) {
+        endPositions.push({ i, j, direction: Direction.Initial, value });
       }
     });
   });
@@ -106,19 +109,40 @@ function getInitialValues(
   });
 }
 
-function oppositeDirection(direction: Directions) {
+function oppositeDirection(direction: Direction) {
   switch (direction) {
-    case Directions.N:
-      return Directions.S;
-    case Directions.E:
-      return Directions.W;
-    case Directions.S:
-      return Directions.N;
-    case Directions.W:
-      return Directions.E;
+    case Direction.N:
+      return Direction.S;
+    case Direction.E:
+      return Direction.W;
+    case Direction.S:
+      return Direction.N;
+    case Direction.W:
+      return Direction.E;
     default:
       return direction;
   }
+}
+
+function isPossibleNeighbourInsideMap(
+  possiblePosition: Position,
+  workingMap: Array<Array<Position>>,
+): boolean {
+  return (
+    possiblePosition.i >= 0 &&
+    possiblePosition.i < workingMap.length &&
+    possiblePosition.j >= 0 &&
+    possiblePosition.j < workingMap[possiblePosition.i].length
+  );
+}
+
+function getPossibleNeighbours(i: number, j: number): Array<Position> {
+  return [
+    { i, j: j - 1, direction: Direction.W, value: "" },
+    { i, j: j + 1, direction: Direction.E, value: "" },
+    { i: i - 1, j, direction: Direction.N, value: "" },
+    { i: i + 1, j, direction: Direction.S, value: "" },
+  ];
 }
 
 function getValidNeighbours(
@@ -126,34 +150,27 @@ function getValidNeighbours(
   cb: (err: string | null, data?: Array<Position>) => void,
 ) {
   const neighbours: Array<Position> = [];
-  const { i: currentI, j: currentJ, direction: currentDirection } = position;
-  const possibleNeighbourPositions = [
-    { i: currentI, j: currentJ - 1, direction: Directions.W },
-    { i: currentI, j: currentJ + 1, direction: Directions.E },
-    { i: currentI - 1, j: currentJ, direction: Directions.N },
-    { i: currentI + 1, j: currentJ, direction: Directions.S },
-  ];
-  possibleNeighbourPositions.forEach((possiblePosition) => {
-    if (
-      possiblePosition.i >= 0 &&
-      possiblePosition.i < workingMap.length &&
-      possiblePosition.j >= 0 &&
-      possiblePosition.j < workingMap[possiblePosition.i].length
-    ) {
+  const { i: currentI, j: currentJ } = position;
+  const possibleNeighbours: Array<Position> = getPossibleNeighbours(
+    currentI,
+    currentJ,
+  );
+  possibleNeighbours.forEach((possibleNeighbour) => {
+    if (isPossibleNeighbourInsideMap(possibleNeighbour, workingMap)) {
       if (
-        workingMap[possiblePosition.i][possiblePosition.j].value != "" &&
-        possiblePosition.direction !=
+        workingMap[possibleNeighbour.i][possibleNeighbour.j].value != "" &&
+        possibleNeighbour.direction !=
           oppositeDirection(workingMap[currentI][currentJ].direction)
       ) {
         neighbours.push({
-          ...workingMap[possiblePosition.i][possiblePosition.j],
-          direction: possiblePosition.direction,
+          ...workingMap[possibleNeighbour.i][possibleNeighbour.j],
+          direction: possibleNeighbour.direction,
         });
       }
     }
   });
 
-  if (neighbours.length != 0 && position.value == "+") {
+  if (neighbours.length != 0 && position.value == turnCharacter) {
     if (
       neighbours.filter(
         (e) =>
@@ -180,7 +197,7 @@ function nextStep(
       console.error("Error: ", err);
       return;
     }
-
+    
     neighbours = data;
   });
 
@@ -194,12 +211,12 @@ function nextStep(
       : neighbours.find((a) => a.direction == currentPosition.direction);
 
   if (!!neighbour) {
-    if (workingMap[neighbour.i][neighbour.j].direction == Directions.Initial) {
+    if (workingMap[neighbour.i][neighbour.j].direction == Direction.Initial) {
       path.push(workingMap[neighbour.i][neighbour.j]);
     }
     workingMap[neighbour.i][neighbour.j].direction = neighbour.direction;
 
-    if (workingMap[neighbour.i][neighbour.j].value == "x") return;
+    if (workingMap[neighbour.i][neighbour.j].value == endCharacter) return;
 
     nextStep(
       map,
@@ -231,7 +248,7 @@ getInitialValues(initialMap, (err, data) => {
     if (err) console.error("Error:", err);
   });
 
-  let displayPath = "@";
+  let displayPath = startCharacter;
 
   path.forEach((e) => {
     displayPath += e.value;
