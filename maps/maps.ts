@@ -8,6 +8,12 @@ export interface Position {
   value: string;
 }
 
+/**
+ * Validates map that following the requirements.
+ * @param startPositions
+ * @param endPositions
+ * @returns Error message on error.
+ */
 export function validateMapConditions(
   startPositions: Array<Position>,
   endPositions: Array<Position>,
@@ -28,6 +34,12 @@ export function validateMapConditions(
   return { err: null };
 }
 
+/**
+ * Function that generates possible neighbours locates Souther, Wester, Easter and Northern of position.
+ * @param i
+ * @param j
+ * @returns List of possible positions.
+ */
 export function getPossibleNeighbours(i: number, j: number): Array<Position> {
   return [
     { i, j: j - 1, direction: Direction.W, value: "" },
@@ -37,6 +49,12 @@ export function getPossibleNeighbours(i: number, j: number): Array<Position> {
   ];
 }
 
+/**
+ * Function that validats is the position inside the map.
+ * @param possiblePosition
+ * @param workingMap
+ * @returns true/false
+ */
 export function isPossibleNeighbourInsideMap(
   possiblePosition: Position,
   workingMap: Array<Array<Position>>,
@@ -49,6 +67,12 @@ export function isPossibleNeighbourInsideMap(
   );
 }
 
+/**
+ * Function that returns valid neighbours.
+ * @param position
+ * @param workingMap
+ * @returns Error or list of neighbours.
+ */
 export function getValidNeighbours(
   position: Position,
   workingMap: Array<Array<Position>>,
@@ -84,6 +108,12 @@ export function getValidNeighbours(
   return { err: null, data: neighbours };
 }
 
+/**
+ * Function that validates is position fake turn. Turn must change the direction.
+ * @param neighbours
+ * @param position
+ * @returns true/false
+ */
 export function isFakeTurn(
   neighbours: Array<Position>,
   position: Position,

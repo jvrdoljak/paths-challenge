@@ -5,6 +5,12 @@ export enum Direction {
   S = "S",
   E = "E",
 }
+
+/**
+ * Function that returns the opposite direction (e.g. north is opposite of south)
+ * @param direction
+ * @returns
+ */
 export function oppositeDirection(direction: Direction) {
   switch (direction) {
     case Direction.N:

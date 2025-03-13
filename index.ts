@@ -9,6 +9,10 @@ import { maps } from "./maps/mapsData";
 
 main(maps[Number(process.argv[2]) ?? 0] ?? maps[0]);
 
+/**
+ * Root function that calls the project and logs characters if success or error message on error.
+ * @param initialMap
+ */
 export function main(initialMap: Array<Array<string>>) {
   const { err, data } = getInitialValues(initialMap);
   if (err) {
@@ -45,6 +49,11 @@ export function main(initialMap: Array<Array<string>>) {
   console.log(`Collected letters: ${collectedLetters}`);
 }
 
+/**
+ * Function that uses two dimensional array, address each position and returns addressed working map.
+ * @param map
+ * @returns Error message or start position with addressed map.
+ */
 function getInitialValues(map: Array<Array<string>>): {
   err: string | null;
   data?: {
@@ -81,6 +90,15 @@ function getInitialValues(map: Array<Array<string>>): {
   };
 }
 
+/**
+ * Recursion that is walking through the two dimensional array and returns path made of characters.
+ * @param map
+ * @param startPosition
+ * @param currentPosition
+ * @param workingMap
+ * @param path
+ * @returns Error message or full path.
+ */
 function nextStep(
   map: Array<Array<String>>,
   startPosition: Position,

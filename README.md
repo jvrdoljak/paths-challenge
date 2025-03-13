@@ -12,6 +12,7 @@ npm run start [mapNumber]
 - 2 - "Letters may be found on turns"
 - 3 - "Do not collect a letter from the same location twice"
 - 4 - "Broken path"
+- 5 - "Fake turn"
 
 # The project is the solution for the following challenge:
 
