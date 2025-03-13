@@ -9,7 +9,7 @@ import { maps } from "./maps/mapsData";
 
 main(maps[Number(process.argv[2]) ?? 0] ?? maps[0]);
 
-function main(initialMap: Array<Array<string>>) {
+export function main(initialMap: Array<Array<string>>) {
   const { err, data } = getInitialValues(initialMap);
   if (err) {
     console.error("Error:", err);

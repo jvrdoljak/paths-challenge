@@ -1,11 +1,11 @@
 import { ERROR_MESSAGE, turnCharacter } from "../constants";
 import { Direction } from "../direction/direction";
 import {
-	getValidNeighbours,
-	isFakeTurn,
-	isPossibleNeighbourInsideMap,
-	Position,
-	validateMapConditions,
+  getValidNeighbours,
+  isFakeTurn,
+  isPossibleNeighbourInsideMap,
+  Position,
+  validateMapConditions,
 } from "./maps";
 
 describe("validateMapConditions", () => {
@@ -219,7 +219,12 @@ describe("getValidNeighbours", () => {
   });
 
   test("should return no neighbours if all are out of bounds", () => {
-    const position: Position = { i: 10, j: 10, direction: Direction.Initial, value: "-" };
+    const position: Position = {
+      i: 10,
+      j: 10,
+      direction: Direction.Initial,
+      value: "-",
+    };
     const result = getValidNeighbours(position, mockMap);
 
     expect(result.err).toBeNull();
