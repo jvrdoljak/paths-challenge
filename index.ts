@@ -53,10 +53,10 @@ function main(initialMap: Array<Array<string>>) {
     displayPath += e.value;
   });
 
-  const displayWord = displayPath.match(/[A-Z]/g)?.join("");
+  const collectedLetters = displayPath.match(/[A-Z]/g)?.join("");
 
-  console.log({ displayPath });
-  console.log({ displayWord });
+  console.log(`Path as characters: ${displayPath}`);
+  console.log(`Collected letters: ${collectedLetters}`);
 }
 
 function getInitialValues(map: Array<Array<string>>): {
