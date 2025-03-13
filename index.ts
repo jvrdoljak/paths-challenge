@@ -4,22 +4,9 @@ import {
   startCharacter,
   turnCharacter,
 } from "./constants";
-import { maps } from "./maps";
-
-enum Direction {
-  Initial = "Initial",
-  N = "N",
-  W = "W",
-  S = "S",
-  E = "E",
-}
-
-interface Position {
-  i: number;
-  j: number;
-  direction: Direction;
-  value: string;
-}
+import { Direction, oppositeDirection } from "./Direction/direction";
+import { Position, validateMapConditions } from "./maps/maps";
+import { maps } from "./maps/mapsData";
 
 main(maps[Number(process.argv[2]) ?? 0] ?? maps[0]);
 
@@ -149,26 +136,6 @@ function nextStep(
   }
 }
 
-function validateMapConditions(
-  startPositions: Array<Position>,
-  endPositions: Array<Position>,
-): { err: string | null } {
-  if (startPositions.length > 1) {
-    return { err: ERROR_MESSAGE.multipleStarts };
-  }
-  if (endPositions.length > 1) {
-    return { err: ERROR_MESSAGE.multipleEnds };
-  }
-  if (startPositions.length < 1) {
-    return { err: ERROR_MESSAGE.missingStart };
-  }
-  if (endPositions.length < 1) {
-    return { err: ERROR_MESSAGE.missingEnd };
-  }
-
-  return { err: null };
-}
-
 function getValidNeighbours(
   position: Position,
   workingMap: Array<Array<Position>>,
@@ -230,19 +197,4 @@ function isPossibleNeighbourInsideMap(
     possiblePosition.j >= 0 &&
     possiblePosition.j < workingMap[possiblePosition.i].length
   );
-}
-
-function oppositeDirection(direction: Direction) {
-  switch (direction) {
-    case Direction.N:
-      return Direction.S;
-    case Direction.E:
-      return Direction.W;
-    case Direction.S:
-      return Direction.N;
-    case Direction.W:
-      return Direction.E;
-    default:
-      return direction;
-  }
 }
