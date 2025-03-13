@@ -33,14 +33,14 @@ function main(initialMap: Array<Array<string>>) {
 
   const workingMap: Array<Array<Position>> = data.workingMap;
 
-  const { err: error, path } = nextStep(
+  const { err: nextStepError, path } = nextStep(
     initialMap,
     data.startPosition,
     data.startPosition,
     workingMap,
     [],
   );
-  if (error) console.error("Error:", err);
+  if (nextStepError) console.error("Error:", nextStepError);
 
   if (!path || path.length === 0) {
     console.error(ERROR_MESSAGE.defaultError);
@@ -74,10 +74,10 @@ function getInitialValues(map: Array<Array<string>>): {
     workingMap.push([]);
     row.forEach((value, j) => {
       workingMap[i].push({ i, j, direction: Direction.Initial, value });
-      if (value == startCharacter) {
+      if (value === startCharacter) {
         startPositions.push({ i, j, direction: Direction.Initial, value });
       }
-      if (value == endCharacter) {
+      if (value === endCharacter) {
         endPositions.push({ i, j, direction: Direction.Initial, value });
       }
     });
@@ -111,22 +111,22 @@ function nextStep(
   }
 
   if (!neighbours) return { err: ERROR_MESSAGE.defaultError };
-  else if (neighbours.length == 0) {
+  else if (neighbours.length === 0) {
     return { err: ERROR_MESSAGE.brokenPath };
   }
 
   const neighbour =
-    neighbours.length == 1
+    neighbours.length === 1
       ? neighbours[0]
-      : neighbours.find((a) => a.direction == currentPosition.direction);
+      : neighbours.find((a) => a.direction === currentPosition.direction);
 
   if (!!neighbour) {
-    if (workingMap[neighbour.i][neighbour.j].direction == Direction.Initial) {
+    if (workingMap[neighbour.i][neighbour.j].direction === Direction.Initial) {
       path.push(workingMap[neighbour.i][neighbour.j]);
     }
     workingMap[neighbour.i][neighbour.j].direction = neighbour.direction;
 
-    if (workingMap[neighbour.i][neighbour.j].value == endCharacter)
+    if (workingMap[neighbour.i][neighbour.j].value === endCharacter)
       return { err: null, path: path };
 
     const { err } = nextStep(
@@ -197,13 +197,13 @@ function getValidNeighbours(
     }
   });
 
-  if (neighbours.length != 0 && position.value == turnCharacter) {
+  if (neighbours.length != 0 && position.value === turnCharacter) {
     if (
       neighbours.filter(
         (e) =>
           e.direction != position.direction &&
           e.direction != oppositeDirection(position.direction),
-      ).length == 0
+      ).length === 0
     ) {
       return { err: ERROR_MESSAGE.fakeTurn };
     }
