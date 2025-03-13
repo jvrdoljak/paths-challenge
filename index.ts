@@ -1,11 +1,10 @@
+import { endCharacter, ERROR_MESSAGE, startCharacter } from "./constants";
+import { Direction } from "./direction/direction";
 import {
-  endCharacter,
-  ERROR_MESSAGE,
-  startCharacter,
-  turnCharacter,
-} from "./constants";
-import { Direction, oppositeDirection } from "./Direction/direction";
-import { Position, validateMapConditions } from "./maps/maps";
+  getValidNeighbours,
+  Position,
+  validateMapConditions,
+} from "./maps/maps";
 import { maps } from "./maps/mapsData";
 
 main(maps[Number(process.argv[2]) ?? 0] ?? maps[0]);
@@ -134,67 +133,4 @@ function nextStep(
   } else {
     return { err: ERROR_MESSAGE.defaultError };
   }
-}
-
-function getValidNeighbours(
-  position: Position,
-  workingMap: Array<Array<Position>>,
-): {
-  err: string | null;
-  data?: Array<Position>;
-} {
-  const neighbours: Array<Position> = [];
-  const { i: currentI, j: currentJ } = position;
-  const possibleNeighbours: Array<Position> = getPossibleNeighbours(
-    currentI,
-    currentJ,
-  );
-  possibleNeighbours.forEach((possibleNeighbour) => {
-    if (isPossibleNeighbourInsideMap(possibleNeighbour, workingMap)) {
-      if (
-        workingMap[possibleNeighbour.i][possibleNeighbour.j].value != "" &&
-        possibleNeighbour.direction !=
-          oppositeDirection(workingMap[currentI][currentJ].direction)
-      ) {
-        neighbours.push({
-          ...workingMap[possibleNeighbour.i][possibleNeighbour.j],
-          direction: possibleNeighbour.direction,
-        });
-      }
-    }
-  });
-
-  if (neighbours.length != 0 && position.value === turnCharacter) {
-    if (
-      neighbours.filter(
-        (e) =>
-          e.direction != position.direction &&
-          e.direction != oppositeDirection(position.direction),
-      ).length === 0
-    ) {
-      return { err: ERROR_MESSAGE.fakeTurn };
-    }
-  }
-  return { err: null, data: neighbours };
-}
-
-function getPossibleNeighbours(i: number, j: number): Array<Position> {
-  return [
-    { i, j: j - 1, direction: Direction.W, value: "" },
-    { i, j: j + 1, direction: Direction.E, value: "" },
-    { i: i - 1, j, direction: Direction.N, value: "" },
-    { i: i + 1, j, direction: Direction.S, value: "" },
-  ];
-}
-
-function isPossibleNeighbourInsideMap(
-  possiblePosition: Position,
-  workingMap: Array<Array<Position>>,
-): boolean {
-  return (
-    possiblePosition.i >= 0 &&
-    possiblePosition.i < workingMap.length &&
-    possiblePosition.j >= 0 &&
-    possiblePosition.j < workingMap[possiblePosition.i].length
-  );
 }
