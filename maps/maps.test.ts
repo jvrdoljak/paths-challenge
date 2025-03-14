@@ -10,11 +10,11 @@ import {
 
 describe("validateMapConditions", () => {
   test("should return error if there are multiple start positions", () => {
-    const startPositions: Position[] = [
+    const startPositions: Array<Position> = [
       { i: 0, j: 0, direction: Direction.Initial, value: "" },
       { i: 2, j: 3, direction: Direction.Initial, value: "" },
     ];
-    const endPositions: Position[] = [
+    const endPositions: Array<Position> = [
       { i: 4, j: 4, direction: Direction.Initial, value: "" },
     ];
 
@@ -23,10 +23,10 @@ describe("validateMapConditions", () => {
   });
 
   test("should return error if there are multiple end positions", () => {
-    const startPositions: Position[] = [
+    const startPositions: Array<Position> = [
       { i: 0, j: 0, direction: Direction.Initial, value: "" },
     ];
-    const endPositions: Position[] = [
+    const endPositions: Array<Position> = [
       { i: 4, j: 4, direction: Direction.Initial, value: "" },
       { i: 2, j: 2, direction: Direction.Initial, value: "" },
     ];
@@ -36,8 +36,8 @@ describe("validateMapConditions", () => {
   });
 
   test("should return error if there is no start position", () => {
-    const startPositions: Position[] = [];
-    const endPositions: Position[] = [
+    const startPositions: Array<Position> = [];
+    const endPositions: Array<Position> = [
       { i: 4, j: 4, direction: Direction.Initial, value: "" },
     ];
 
@@ -46,20 +46,20 @@ describe("validateMapConditions", () => {
   });
 
   test("should return error if there is no end position", () => {
-    const startPositions: Position[] = [
+    const startPositions: Array<Position> = [
       { i: 0, j: 0, direction: Direction.Initial, value: "" },
     ];
-    const endPositions: Position[] = [];
+    const endPositions: Array<Position> = [];
 
     const result = validateMapConditions(startPositions, endPositions);
     expect(result.err).toBe(ERROR_MESSAGE.missingEnd);
   });
 
   test("should return null if start and end positions are valid", () => {
-    const startPositions: Position[] = [
+    const startPositions: Array<Position> = [
       { i: 0, j: 0, direction: Direction.Initial, value: "" },
     ];
-    const endPositions: Position[] = [
+    const endPositions: Array<Position> = [
       { i: 4, j: 4, direction: Direction.Initial, value: "" },
     ];
 
@@ -69,7 +69,7 @@ describe("validateMapConditions", () => {
 });
 
 describe("isPossibleNeighbourInsideMap", () => {
-  const mockMap: Position[][] = [
+  const mockMap: Array<Array<Position>> = [
     [
       { i: 0, j: 0, direction: Direction.N, value: "@" },
       { i: 0, j: 1, direction: Direction.E, value: "-" },
@@ -139,7 +139,7 @@ describe("isFakeTurn", () => {
       direction: Direction.E,
       value: turnCharacter,
     };
-    const neighbours: Position[] = [
+    const neighbours: Array<Position> = [
       { i: 0, j: 5, direction: Direction.E, value: "-" },
     ];
 
@@ -153,7 +153,7 @@ describe("isFakeTurn", () => {
       direction: Direction.E,
       value: turnCharacter,
     };
-    const neighbours: Position[] = [
+    const neighbours: Array<Position> = [
       { i: 1, j: 1, direction: Direction.S, value: "|" },
     ];
 
@@ -162,7 +162,7 @@ describe("isFakeTurn", () => {
 });
 
 describe("getValidNeighbours", () => {
-  const mockMap: Position[][] = [
+  const mockMap: Array<Array<Position>> = [
     [
       { i: 0, j: 0, direction: Direction.Initial, value: "@" },
       { i: 0, j: 1, direction: Direction.Initial, value: "-" },

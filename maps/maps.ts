@@ -1,4 +1,4 @@
-import { ERROR_MESSAGE, turnCharacter } from "../constants";
+import { ERROR_MESSAGE, startCharacter, turnCharacter } from "../constants";
 import { Direction, oppositeDirection } from "../direction/direction";
 
 export interface Position {
@@ -6,6 +6,40 @@ export interface Position {
   j: number;
   direction: Direction;
   value: string;
+}
+
+/**
+ * Function that returns a path for display
+ * @param path
+ * @returns
+ */
+export function getDisplayPath(path: Array<Position>): string {
+  let displayPath: string = startCharacter;
+
+  path.forEach((e) => {
+    displayPath += e.value;
+  });
+
+  return displayPath;
+}
+
+/**
+ * Function that returns found letters but removes letters from the same location.
+ * @param path
+ * @returns
+ */
+export function getCollectedLetters(path: Array<Position>): string | undefined {
+  const uniquePath = path.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => t.i === item.i && t.j === item.j),
+  );
+
+  let uniqueDisplayPath: string = startCharacter;
+  uniquePath.forEach((e) => {
+    uniqueDisplayPath += e.value;
+  });
+
+  return uniqueDisplayPath.match(/[A-Z]/g)?.join("");
 }
 
 /**
@@ -32,39 +66,6 @@ export function validateMapConditions(
   }
 
   return { err: null };
-}
-
-/**
- * Function that generates possible neighbours locates Souther, Wester, Easter and Northern of position.
- * @param i
- * @param j
- * @returns List of possible positions.
- */
-export function getPossibleNeighbours(i: number, j: number): Array<Position> {
-  return [
-    { i, j: j - 1, direction: Direction.W, value: "" },
-    { i, j: j + 1, direction: Direction.E, value: "" },
-    { i: i - 1, j, direction: Direction.N, value: "" },
-    { i: i + 1, j, direction: Direction.S, value: "" },
-  ];
-}
-
-/**
- * Function that validats is the position inside the map.
- * @param possiblePosition
- * @param workingMap
- * @returns true/false
- */
-export function isPossibleNeighbourInsideMap(
-  possiblePosition: Position,
-  workingMap: Array<Array<Position>>,
-): boolean {
-  return (
-    possiblePosition.i >= 0 &&
-    possiblePosition.i < workingMap.length &&
-    possiblePosition.j >= 0 &&
-    possiblePosition.j < workingMap[possiblePosition.i].length
-  );
 }
 
 /**
@@ -106,6 +107,39 @@ export function getValidNeighbours(
     }
   }
   return { err: null, data: neighbours };
+}
+
+/**
+ * Function that generates possible neighbours locates Souther, Wester, Easter and Northern of position.
+ * @param i
+ * @param j
+ * @returns List of possible positions.
+ */
+export function getPossibleNeighbours(i: number, j: number): Array<Position> {
+  return [
+    { i, j: j - 1, direction: Direction.W, value: "" },
+    { i, j: j + 1, direction: Direction.E, value: "" },
+    { i: i - 1, j, direction: Direction.N, value: "" },
+    { i: i + 1, j, direction: Direction.S, value: "" },
+  ];
+}
+
+/**
+ * Function that validats is the position inside the map.
+ * @param possiblePosition
+ * @param workingMap
+ * @returns true/false
+ */
+export function isPossibleNeighbourInsideMap(
+  possiblePosition: Position,
+  workingMap: Array<Array<Position>>,
+): boolean {
+  return (
+    possiblePosition.i >= 0 &&
+    possiblePosition.i < workingMap.length &&
+    possiblePosition.j >= 0 &&
+    possiblePosition.j < workingMap[possiblePosition.i].length
+  );
 }
 
 /**

@@ -47,7 +47,6 @@ Output:
   - high-level tests (i.e. acceptance tests) which test that the program gives correct output for a given input, according to examples specified below
   - unit tests which test small bits of logic separated from the rest of the program, e.g. advancing the current location based on the current direction
 
-
 ## Specifications
 
 ### Valid maps

@@ -1,6 +1,8 @@
 import { endCharacter, ERROR_MESSAGE, startCharacter } from "./constants";
 import { Direction } from "./direction/direction";
 import {
+  getCollectedLetters,
+  getDisplayPath,
   getValidNeighbours,
   Position,
   validateMapConditions,
@@ -37,16 +39,11 @@ export function main(initialMap: Array<Array<string>>) {
     return;
   }
 
-  let displayPath = startCharacter;
-
-  path.forEach((e) => {
-    displayPath += e.value;
-  });
-
-  const collectedLetters = displayPath.match(/[A-Z]/g)?.join("");
+  const displayPath = getDisplayPath(path);
+  const collectedLetters = getCollectedLetters(path);
 
   console.log(`Path as characters: ${displayPath}`);
-  console.log(`Collected letters: ${collectedLetters}`);
+  if (collectedLetters) console.log(`Collected letters: ${collectedLetters}`);
 }
 
 /**
@@ -124,31 +121,28 @@ function nextStep(
       ? neighbours[0]
       : neighbours.find((a) => a.direction === currentPosition.direction);
 
-  if (!!neighbour) {
-    if (workingMap[neighbour.i][neighbour.j].direction === Direction.Initial) {
-      path.push(workingMap[neighbour.i][neighbour.j]);
-    }
-    workingMap[neighbour.i][neighbour.j].direction = neighbour.direction;
+  if (!neighbour) return { err: ERROR_MESSAGE.defaultError };
 
-    if (workingMap[neighbour.i][neighbour.j].value === endCharacter)
-      return { err: null, path: path };
+  path.push(workingMap[neighbour.i][neighbour.j]);
+  workingMap[neighbour.i][neighbour.j].direction = neighbour.direction;
 
-    const { err } = nextStep(
-      map,
-      startPosition,
-      {
-        i: neighbour.i,
-        j: neighbour.j,
-        direction: neighbour.direction,
-        value: neighbour.value,
-      },
-      workingMap,
-      path,
-    );
+  if (workingMap[neighbour.i][neighbour.j].value === endCharacter)
+    return { err: null, path: path };
 
-    if (err) return { err };
-    return { err: null, path };
-  } else {
-    return { err: ERROR_MESSAGE.defaultError };
-  }
+  const { err: nextStepError } = nextStep(
+    map,
+    startPosition,
+    {
+      i: neighbour.i,
+      j: neighbour.j,
+      direction: neighbour.direction,
+      value: neighbour.value,
+    },
+    workingMap,
+    path,
+  );
+
+  if (nextStepError) return { err: nextStepError };
+
+  return { err: null, path };
 }
