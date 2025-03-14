@@ -1,12 +1,75 @@
 import { ERROR_MESSAGE, turnCharacter } from "../constants";
 import { Direction } from "../direction/direction";
 import {
+  getCollectedLetters,
+  getDisplayPath,
   getValidNeighbours,
   isFakeTurn,
   isPossibleNeighbourInsideMap,
   Position,
   validateMapConditions,
 } from "./maps";
+
+describe("getDisplayPath", () => {
+  test("should return correct display path", () => {
+    const path: Array<Position> = [
+      { i: 0, j: 1, direction: Direction.E, value: "-" },
+      { i: 0, j: 2, direction: Direction.E, value: "-" },
+      { i: 0, j: 3, direction: Direction.E, value: "-" },
+      { i: 0, j: 4, direction: Direction.E, value: "A" },
+      { i: 0, j: 5, direction: Direction.E, value: "-" },
+      { i: 0, j: 6, direction: Direction.E, value: "-" },
+      { i: 0, j: 7, direction: Direction.E, value: "-" },
+      { i: 0, j: 8, direction: Direction.E, value: "x" },
+    ];
+
+    const result = getDisplayPath(path);
+
+    expect(result).toBe("@---A---x");
+  });
+
+  test("should return only start character for empty path", () => {
+    const result = getDisplayPath([]);
+    expect(result).toBe("@");
+  });
+});
+
+describe("getCollectedLetters", () => {
+  test("should return correct collected letters", () => {
+    const path: Array<Position> = [
+      { i: 0, j: 1, direction: Direction.E, value: "-" },
+      { i: 0, j: 2, direction: Direction.E, value: "-" },
+      { i: 0, j: 3, direction: Direction.E, value: "-" },
+      { i: 0, j: 4, direction: Direction.E, value: "A" },
+      { i: 1, j: 4, direction: Direction.S, value: "|" },
+      { i: 2, j: 4, direction: Direction.S, value: "B" },
+      { i: 2, j: 5, direction: Direction.E, value: "-" },
+      { i: 2, j: 6, direction: Direction.E, value: "C" },
+      { i: 2, j: 6, direction: Direction.E, value: "C" },
+    ];
+
+    const result = getCollectedLetters(path);
+
+    expect(result).toBe("ABC");
+  });
+
+  test("should return undefined if no letters are found", () => {
+    const path: Position[] = [
+      { i: 0, j: 1, direction: Direction.E, value: "-" },
+      { i: 0, j: 2, direction: Direction.E, value: "-" },
+      { i: 0, j: 3, direction: Direction.E, value: "-" },
+    ];
+
+    const result = getCollectedLetters(path);
+
+    expect(result).toBeUndefined();
+  });
+
+  test("should return empty string if path is empty", () => {
+    const result = getCollectedLetters([]);
+    expect(result).toBeUndefined();
+  });
+});
 
 describe("validateMapConditions", () => {
   test("should return error if there are multiple start positions", () => {
