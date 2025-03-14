@@ -32,7 +32,10 @@ export function main(initialMap: Array<Array<string>>) {
     workingMap,
     [],
   );
-  if (nextStepError) console.error("Error:", nextStepError);
+  if (nextStepError) {
+    console.error("Error:", nextStepError);
+    return;
+  }
 
   if (!path || path.length === 0) {
     console.error(ERROR_MESSAGE.defaultError);
