@@ -5,7 +5,7 @@ npm install
 npm run start [mapNumber]
 ```
 
-`mapNumber` can be from 0 to 4 and:
+`mapNumber` can be from 0 to 5 and:
 
 - 0 - "Basic"
 - 1 - "Go straight through intersections"
